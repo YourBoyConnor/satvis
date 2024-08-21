@@ -1,3 +1,4 @@
+import * as Cesium from "cesium";
 import { SatelliteComponentCollection } from "./SatelliteComponentCollection";
 import { GroundStationEntity } from "./GroundStationEntity";
 
@@ -20,6 +21,7 @@ export class SatelliteManager {
     this.viewer.trackedEntityChanged.addEventListener(() => {
       if (this.trackedSatellite) {
         this.getSatellite(this.trackedSatellite).show(this.#enabledComponents);
+        this.randomlyChangeColor(10);
       }
       useSatStore().trackedSatellite = this.trackedSatellite;
     });
@@ -289,4 +291,51 @@ export class SatelliteManager {
     const satStore = useSatStore();
     satStore.groundstation = [position.latitude, position.longitude];
   }
+
+  getAllEnabledSatellites() {
+    return this.satellites.filter((sat) => this.satIsActive(sat));
+  }
+
+  randomlyChangeColor(amount) {
+    const originalColors = new Map();
+
+    for (let i = 0; i < amount; i += 1) {
+      const randomSat = this.getAllEnabledSatellites()[Math.floor(Math.random() * this.getAllEnabledSatellites().length)];
+
+      // Save the original color
+      originalColors.set(randomSat, Cesium.Color.WHITE);
+
+      // Change the color to green
+      randomSat.changeColor(Cesium.Color.GREEN);
+    }
+
+    // Get the current simulation time
+    const { currentTime } = this.viewer.clock;
+
+    // Calculate the time to revert back (6 minutes later)
+    const revertTime = Cesium.JulianDate.addMinutes(currentTime, 6, new Cesium.JulianDate());
+
+    // Define the callback function
+    const revertColors = (clock) => {
+      if (Cesium.JulianDate.greaterThanOrEquals(clock.currentTime, revertTime)) {
+        originalColors.forEach((color, sat) => {
+          sat.changeColor(color);
+        });
+
+        // Remove the event listener after reverting colors
+        this.viewer.clock.onTick.removeEventListener(revertColors);
+      }
+    };
+
+    // Attach the event listener
+    this.viewer.clock.onTick.addEventListener(revertColors);
+  }
+
+// randomlyChangeColor(amount) {
+//   for (let i = 0; i < amount; i += 1) {
+//     const randomSat = this.getAllEnabledSatellites()[Math.floor(Math.random() * this.getAllEnabledSatellites().length)];
+//     randomSat.changeColor(Cesium.Color.RED);
+//
+//   }
+// }
 }
