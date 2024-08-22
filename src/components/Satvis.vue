@@ -2,24 +2,64 @@
   <div class="cesium">
     <div v-show="showUI" id="toolbarLeft">
       <div class="toolbarButtons">
-        <button v-tooltip="'Satellite selection'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('cat')">
+        <button
+          v-tooltip="'Set time'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('time')"
+        >
+          <font-awesome-icon icon="fas fa-clock" />
+        </button>
+        <button
+          v-tooltip="'Satellite selection'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('cat')"
+        >
           <i class="icon svg-sat"></i>
         </button>
-        <button v-tooltip="'Satellite elements'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('sat')">
+        <button
+          v-tooltip="'Satellite elements'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('sat')"
+        >
           <font-awesome-icon icon="fas fa-layer-group" />
         </button>
-        <button v-tooltip="'Ground station'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('gs')">
+        <button
+          v-tooltip="'Ground station'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('gs')"
+        >
           <i class="icon svg-groundstation"></i>
         </button>
         <button v-tooltip="'Map'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('map')">
           <font-awesome-icon icon="fas fa-globe-africa" />
         </button>
-        <button v-if="cc.minimalUI" v-tooltip="'Mobile'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('ios')">
+        <button
+          v-if="cc.minimalUI"
+          v-tooltip="'Mobile'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('ios')"
+        >
           <font-awesome-icon icon="fas fa-mobile-alt" />
         </button>
-        <button v-tooltip="'Debug'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleMenu('dbg')">
+        <button
+          v-tooltip="'Debug'"
+          type="button"
+          class="cesium-button cesium-toolbar-button"
+          @click="toggleMenu('dbg')"
+        >
           <font-awesome-icon icon="fas fa-hammer" />
         </button>
+      </div>
+      <div v-show="menu.time" class="toolbarSwitches">
+        <div class="time">
+          <!--          <vue-date-picker v-model="date" :timezone="{ timezone: 'UTC' }" />-->
+          <vue-date-picker :model-value="date" @update:model-value="changeDate" />
+        </div>
       </div>
       <div v-show="menu.cat" class="toolbarSwitches">
         <satellite-select />
@@ -169,7 +209,14 @@
       </div>
     </div>
     <div id="toolbarRight">
-      <a v-if="showUI" v-tooltip="'Github'" class="cesium-button cesium-toolbar-button" href="https://github.com/Flowm/satvis/" target="_blank" rel="noopener">
+      <a
+        v-if="showUI"
+        v-tooltip="'Github'"
+        class="cesium-button cesium-toolbar-button"
+        href="https://github.com/Flowm/satvis/"
+        target="_blank"
+        rel="noopener"
+      >
         <font-awesome-icon icon="fab fa-github" />
       </a>
       <button v-tooltip="'Toggle UI'" type="button" class="cesium-button cesium-toolbar-button" @click="toggleUI">
@@ -180,6 +227,7 @@
 </template>
 
 <script>
+import { ref } from "vue";
 import { mapWritableState } from "pinia";
 import { useCesiumStore } from "../stores/cesium";
 import { useSatStore } from "../stores/sat";
@@ -194,6 +242,7 @@ export default {
   data() {
     return {
       menu: {
+        time: false,
         cat: false,
         sat: false,
         gs: false,
@@ -202,6 +251,8 @@ export default {
         dbg: false,
       },
       showUI: true,
+      date: "",
+      changeDate: () => {},
     };
   },
   computed: {
@@ -274,6 +325,13 @@ export default {
       cc.setTime(this.$route.query.time);
     }
     this.showUI = !DeviceDetect.inIframe();
+    this.date = ref(new Date()); // eslint-disable-line no-unused-vars
+    this.changeDate = (modelData) => {
+      this.date = modelData;
+      if (modelData != null) {
+        cc.setTime(modelData);
+      }
+    };
   },
   methods: {
     toggleMenu(name) {

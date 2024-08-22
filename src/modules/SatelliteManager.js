@@ -12,6 +12,10 @@ export class SatelliteManager {
 
   #enabledSatellites = [];
 
+  #visibleSatellites = {
+    "STARLINK-1109": ["STARLINK-1091", "STARLINK-1084", "STARLINK-1174", "STARLINK-1066"],
+  };
+
   constructor(viewer) {
     this.viewer = viewer;
 
@@ -21,7 +25,7 @@ export class SatelliteManager {
     this.viewer.trackedEntityChanged.addEventListener(() => {
       if (this.trackedSatellite) {
         this.getSatellite(this.trackedSatellite).show(this.#enabledComponents);
-        this.randomlyChangeColor(10);
+        this.markVisibleSatellites(this.trackedSatellite);
       }
       useSatStore().trackedSatellite = this.trackedSatellite;
     });
@@ -331,11 +335,23 @@ export class SatelliteManager {
     this.viewer.clock.onTick.addEventListener(revertColors);
   }
 
-// randomlyChangeColor(amount) {
-//   for (let i = 0; i < amount; i += 1) {
-//     const randomSat = this.getAllEnabledSatellites()[Math.floor(Math.random() * this.getAllEnabledSatellites().length)];
-//     randomSat.changeColor(Cesium.Color.RED);
-//
-//   }
-// }
+  markVisibleSatellites(name) {
+    // Reset all colors
+    this.getAllEnabledSatellites().forEach((sat) => {
+      sat.changeColor(Cesium.Color.WHITE);
+    });
+    // Change the color of the active satellite
+    const activeSat = this.getSatellite(name);
+    activeSat.changeColor(Cesium.Color.DARKBLUE);
+    this.trackedSatellite = this.getSatellite(name);
+    // this.trackedSatellite = this.getSatellite(name);
+    // Change the color of the visible satellites
+    const visibleSatellites = this.#visibleSatellites[name];
+    if (visibleSatellites) {
+      visibleSatellites.forEach((satName) => {
+        const sat = this.getSatellite(satName);
+        sat.changeColor(Cesium.Color.GREEN);
+      });
+    }
+  }
 }

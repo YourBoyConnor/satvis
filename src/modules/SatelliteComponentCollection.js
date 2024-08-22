@@ -15,9 +15,7 @@ export class SatelliteComponentCollection extends CesiumComponentCollection {
   }
 
   changeColor(color) {
-    this.disableComponent("Point");
-    this.createPoint(color);
-    this.enableComponent("Point");
+    this.components.Point._point.color = color; // eslint-disable-line no-underscore-dangle
   }
 
   enableComponent(name) {
@@ -196,10 +194,10 @@ export class SatelliteComponentCollection extends CesiumComponentCollection {
     this.createCesiumEntity(entityName, entityKey, entityValue, this.props.name, this.description, this.props.sampledPosition.fixed, true);
   }
 
-  createPoint(pointColor = Cesium.Color.WHITE) {
+  createPoint() {
     const point = new Cesium.PointGraphics({
       pixelSize: 6,
-      color: pointColor,
+      color: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.DIMGREY,
       outlineWidth: 1,
     });

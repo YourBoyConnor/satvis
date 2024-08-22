@@ -8,8 +8,10 @@ import Toast from "vue-toastification";
 import * as Sentry from "@sentry/browser";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faLayerGroup, faGlobeAfrica, faMobileAlt, faHammer, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faLayerGroup, faGlobeAfrica, faMobileAlt, faHammer, faEye, faClock } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 import App from "./App.vue";
 import router from "./components/Router";
@@ -41,8 +43,9 @@ function satvisSetup(customConfig = {}) {
   app.use(Toast, {
     position: "bottom-right",
   });
-  library.add(faLayerGroup, faGlobeAfrica, faMobileAlt, faHammer, faEye, faGithub);
+  library.add(faLayerGroup, faGlobeAfrica, faMobileAlt, faHammer, faEye, faGithub, faClock);
   app.component("FontAwesomeIcon", FontAwesomeIcon);
+  app.component("VueDatePicker", VueDatePicker);
   app.mount("#app");
 
   // Register service worker
