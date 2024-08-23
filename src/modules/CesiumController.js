@@ -81,6 +81,8 @@ export class CesiumController {
       setTimeout(() => { this.fixLogo(); }, 2500);
     }
 
+    this.setTime("2024-02-01T00:00:00Z");
+
     this.activeLayers = [];
   }
 
@@ -318,7 +320,7 @@ export class CesiumController {
     }
   }
 
-  setTime(current, start = dayjs.utc(current).subtract(12, "hour").toISOString(), stop = dayjs.utc(current).add(7, "day").toISOString()) {
+  setTime(current, start = dayjs.utc(current).subtract(1, "year").toISOString(), stop = dayjs.utc(current).add(1, "year").toISOString()) {
     this.viewer.clock.startTime = Cesium.JulianDate.fromIso8601(dayjs.utc(start).toISOString());
     this.viewer.clock.stopTime = Cesium.JulianDate.fromIso8601(dayjs.utc(stop).toISOString());
     this.viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(dayjs.utc(current).toISOString());

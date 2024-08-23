@@ -15,7 +15,9 @@ export class SatelliteComponentCollection extends CesiumComponentCollection {
   }
 
   changeColor(color) {
-    this.components.Point._point.color = color; // eslint-disable-line no-underscore-dangle
+    if (this.components.Point) {
+      this.components.Point._point.color = color; // eslint-disable-line no-underscore-dangle
+    }
   }
 
   enableComponent(name) {

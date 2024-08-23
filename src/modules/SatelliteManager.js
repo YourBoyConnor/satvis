@@ -12,9 +12,7 @@ export class SatelliteManager {
 
   #enabledSatellites = [];
 
-  #visibleSatellites = {
-    "STARLINK-1109": ["STARLINK-1091", "STARLINK-1084", "STARLINK-1174", "STARLINK-1066"],
-  };
+  #visibleSatellites = {};
 
   constructor(viewer) {
     this.viewer = viewer;
@@ -22,12 +20,22 @@ export class SatelliteManager {
     this.satellites = [];
     this.availableComponents = ["Point", "Label", "Orbit", "Orbit track", "Ground track", "Sensor cone", "3D model"];
 
+    fetch("../../data/los_vis.json").then((response) => response.json()).then((data) => {
+      this.#visibleSatellites = data;
+    });
+
     this.viewer.trackedEntityChanged.addEventListener(() => {
       if (this.trackedSatellite) {
         this.getSatellite(this.trackedSatellite).show(this.#enabledComponents);
-        this.markVisibleSatellites(this.trackedSatellite);
+        this.markVisibleSatellite(this.trackedSatellite);
       }
       useSatStore().trackedSatellite = this.trackedSatellite;
+    });
+
+    this.viewer.clock.onTick.addEventListener(() => {
+      if (this.trackedSatellite) {
+        this.markVisibleSatellites(this.trackedSatellite);
+      }
     });
   }
 
@@ -300,42 +308,7 @@ export class SatelliteManager {
     return this.satellites.filter((sat) => this.satIsActive(sat));
   }
 
-  randomlyChangeColor(amount) {
-    const originalColors = new Map();
-
-    for (let i = 0; i < amount; i += 1) {
-      const randomSat = this.getAllEnabledSatellites()[Math.floor(Math.random() * this.getAllEnabledSatellites().length)];
-
-      // Save the original color
-      originalColors.set(randomSat, Cesium.Color.WHITE);
-
-      // Change the color to green
-      randomSat.changeColor(Cesium.Color.GREEN);
-    }
-
-    // Get the current simulation time
-    const { currentTime } = this.viewer.clock;
-
-    // Calculate the time to revert back (6 minutes later)
-    const revertTime = Cesium.JulianDate.addMinutes(currentTime, 6, new Cesium.JulianDate());
-
-    // Define the callback function
-    const revertColors = (clock) => {
-      if (Cesium.JulianDate.greaterThanOrEquals(clock.currentTime, revertTime)) {
-        originalColors.forEach((color, sat) => {
-          sat.changeColor(color);
-        });
-
-        // Remove the event listener after reverting colors
-        this.viewer.clock.onTick.removeEventListener(revertColors);
-      }
-    };
-
-    // Attach the event listener
-    this.viewer.clock.onTick.addEventListener(revertColors);
-  }
-
-  markVisibleSatellites(name) {
+  markVisibleSatellite(name) {
     // Reset all colors
     this.getAllEnabledSatellites().forEach((sat) => {
       sat.changeColor(Cesium.Color.WHITE);
@@ -343,14 +316,36 @@ export class SatelliteManager {
     // Change the color of the active satellite
     const activeSat = this.getSatellite(name);
     activeSat.changeColor(Cesium.Color.DARKBLUE);
-    this.trackedSatellite = this.getSatellite(name);
-    // this.trackedSatellite = this.getSatellite(name);
+    this.markVisibleSatellites(name);
+  }
+
+  markVisibleSatellites(name) {
     // Change the color of the visible satellites
     const visibleSatellites = this.#visibleSatellites[name];
     if (visibleSatellites) {
-      visibleSatellites.forEach((satName) => {
+      Object.keys(visibleSatellites).forEach((satName) => {
         const sat = this.getSatellite(satName);
-        sat.changeColor(Cesium.Color.GREEN);
+        let visible = false;
+        const timeIntervals = visibleSatellites[satName];
+        timeIntervals.forEach((interval) => {
+          const { start, end } = interval;
+          const { currentTime } = this.viewer.clock;
+
+          const startTimeJulian = Cesium.JulianDate.fromIso8601(start);
+          const endTimeJulian = Cesium.JulianDate.fromIso8601(end);
+
+          if (Cesium.JulianDate.greaterThanOrEquals(currentTime, startTimeJulian) && Cesium.JulianDate.lessThanOrEquals(currentTime, endTimeJulian)) {
+            visible = true;
+          }
+        });
+        if (visible) {
+          console.log("Visible: ", satName);
+          if (sat) {
+            sat.changeColor(Cesium.Color.GREEN);
+          }
+        } else if (sat) {
+          sat.changeColor(Cesium.Color.WHITE);
+        }
       });
     }
   }

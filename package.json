@@ -15,7 +15,8 @@
     "start": "webpack serve --progress --config webpack/webpack.config.js",
     "start:anyhost": "webpack serve --progress --config webpack/webpack.config.js --host 0.0.0.0",
     "update-tle": "node data/tle/update-tle.js",
-    "update-custom-data": "npm run update-tle && bash data/custom/update-custom-data.sh"
+    "update-custom-data": "npm run update-tle && bash data/custom/update-custom-data.sh",
+    "convert-elset": "node data/tle/convert-elset-to-txt.js"
   },
   "author": "Florian Mauracher",
   "private": true,
@@ -31,6 +32,7 @@
     "@vuepic/vue-datepicker": "^9.0.2",
     "cesium": "^1.119.0",
     "cesium-sensor-volumes": "github:Flowm/cesium-sensor-volumes#1.102.0",
+    "csv-parser": "^3.0.0",
     "dayjs": "^1.11.11",
     "pinia": "^2.1.7",
     "primevue": "^4.0.0",

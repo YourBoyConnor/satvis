@@ -325,7 +325,7 @@ export default {
       cc.setTime(this.$route.query.time);
     }
     this.showUI = !DeviceDetect.inIframe();
-    this.date = ref(new Date()); // eslint-disable-line no-unused-vars
+    this.date = ref(new Date("2024-02-01T00:00:00Z")); // eslint-disable-line no-unused-vars
     this.changeDate = (modelData) => {
       this.date = modelData;
       if (modelData != null) {
