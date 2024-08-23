@@ -60,7 +60,7 @@
           Set time
         </div>
         <div class="time">
-          <!--          <vue-date-picker v-model="date" :timezone="{ timezone: 'UTC' }" />-->
+<!--          TODO: make UTC-->
           <vue-date-picker :model-value="date" @update:model-value="changeDate" />
         </div>
       </div>

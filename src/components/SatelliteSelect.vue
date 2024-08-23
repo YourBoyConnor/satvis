@@ -37,6 +37,7 @@
     <div class="toolbarTitle">
       Tracked satellite
     </div>
+<!--    TODO: make tracked satellite show up in box-->
     <div class="toolbarContent">
       <vue-multiselect
         v-model="trackedSatellite"
