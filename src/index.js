@@ -2,7 +2,7 @@ import satvisSetup from "./app";
 
 const { cc } = satvisSetup({
   sat: {
-    enabledTags: ["Weather"],
+    enabledTags: ["ASE"],
   },
 });
 
