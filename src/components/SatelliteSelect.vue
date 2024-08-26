@@ -37,18 +37,18 @@
     <div class="toolbarTitle">
       Tracked satellite
     </div>
-<!--    TODO: make tracked satellite show up in box-->
     <div class="toolbarContent">
       <vue-multiselect
         v-model="trackedSatellite"
         :options="allEnabledSatellites"
+        :multiple="false"
         placeholder="Type to search"
-        :limit-text="trackedSatellite => `${trackedSatellite}`"
       >
         <template #noResult>
           No matching satellites
         </template>
       </vue-multiselect>
+      <pre class="language-json"><code>{{ trackedSatellite }}</code></pre>
     </div>
   </div>
 </template>
@@ -65,6 +65,7 @@ export default {
   },
   data() {
     return {
+      trackedSatellite: "",
     };
   },
   computed: {
@@ -98,14 +99,6 @@ export default {
         const enabledSatellites = sats.filter((sat) => !satellitesInEnabledTags.includes(sat));
         cc.sats.enabledSatellites = enabledSatellites;
         cc.sats.enabledTags = enabledTags;
-      },
-    },
-    trackedSatellite: {
-      get() {
-        return cc.sats.trackedSatellite;
-      },
-      set(sat) {
-        cc.sats.trackedSatellite = sat;
       },
     },
   },

@@ -56,11 +56,7 @@
         </button>
       </div>
       <div v-show="menu.time" class="toolbarSwitches">
-        <div class="toolbarTitle">
-          Set time
-        </div>
         <div class="time">
-<!--          TODO: make UTC-->
           <vue-date-picker :model-value="date" @update:model-value="changeDate" />
         </div>
       </div>
@@ -328,11 +324,17 @@ export default {
       cc.setTime(this.$route.query.time);
     }
     this.showUI = !DeviceDetect.inIframe();
-    this.date = ref(new Date("2024-02-01T00:00:00Z")); // eslint-disable-line no-unused-vars
+    // apply offset
+    const dateUTC = new Date("2024-02-01T00:00:00Z");
+    this.date = ref(dateUTC.setMinutes(dateUTC.getMinutes() + dateUTC.getTimezoneOffset())); // eslint-disable-line no-unused-vars
     this.changeDate = (modelData) => {
       this.date = modelData;
-      if (modelData != null) {
-        cc.setTime(modelData);
+
+      // apply offset
+      const modelDataCesium = new Date(modelData);
+      modelDataCesium.setMinutes(modelDataCesium.getMinutes() - modelDataCesium.getTimezoneOffset());
+      if (modelDataCesium) {
+        cc.setTime(modelDataCesium);
       }
     };
   },
