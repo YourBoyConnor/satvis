@@ -25,17 +25,25 @@ export class SatelliteManager {
     });
 
     this.viewer.trackedEntityChanged.addEventListener(() => {
+      let checkSatVis;
       if (this.trackedSatellite) {
         this.getSatellite(this.trackedSatellite).show(this.#enabledComponents);
         this.markVisibleSatellite(this.trackedSatellite);
+        if (!checkSatVis) {
+          checkSatVis = setInterval(() => {
+            this.markVisibleSatellites(this.trackedSatellite);
+          }, 5000);
+        }
+      } else {
+        if (checkSatVis) {
+          clearInterval(checkSatVis);
+          checkSatVis = undefined;
+        }
+        this.getAllEnabledSatellites().forEach((sat) => {
+          sat.changeColor(Cesium.Color.WHITE);
+        });
       }
       useSatStore().trackedSatellite = this.trackedSatellite;
-    });
-
-    this.viewer.clock.onTick.addEventListener(() => {
-      if (this.trackedSatellite) {
-        this.markVisibleSatellites(this.trackedSatellite);
-      }
     });
   }
 
