@@ -20,9 +20,32 @@ export class SatelliteManager {
     this.satellites = [];
     this.availableComponents = ["Point", "Label", "Orbit", "Orbit track", "Ground track", "Sensor cone", "3D model"];
 
-    fetch("../../data/los_vis.json").then((response) => response.json()).then((data) => {
-      this.#visibleSatellites = data;
-    });
+    fetch("../../data/los_vis.json")
+      .then((response) => response.json())
+      .then((data) => {
+        // Iterate over the keys of the main object (e.g., "STARLINK-1109")
+        for (const parentSat in data) { // eslint-disable-line no-restricted-syntax
+          if (Object.prototype.hasOwnProperty.call(data, parentSat)) {
+            // Iterate over the child satellites
+            for (const childSat in data[parentSat]) { // eslint-disable-line no-restricted-syntax
+              if (Object.prototype.hasOwnProperty.call(data[parentSat], childSat)) {
+                // Iterate over the intervals array for each child satellite
+                for (const interval of data[parentSat][childSat]) { // eslint-disable-line no-restricted-syntax
+                  // Convert to Julian Date using Cesium
+                  const startTimeJulian = Cesium.JulianDate.fromIso8601(interval.start);
+                  const endTimeJulian = Cesium.JulianDate.fromIso8601(interval.end);
+
+                  // Replace the start and end times with the Julian dates
+                  interval.start = startTimeJulian;
+                  interval.end = endTimeJulian;
+                }
+              }
+            }
+          }
+        }
+
+        this.#visibleSatellites = data;
+      });
 
     this.viewer.trackedEntityChanged.addEventListener(() => {
       let checkSatVis;
@@ -32,7 +55,7 @@ export class SatelliteManager {
         if (!checkSatVis) {
           checkSatVis = setInterval(() => {
             this.markVisibleSatellites(this.trackedSatellite);
-          }, 5000);
+          }, 1000);
         }
       } else {
         if (checkSatVis) {
@@ -334,25 +357,26 @@ export class SatelliteManager {
       Object.keys(visibleSatellites).forEach((satName) => {
         const sat = this.getSatellite(satName);
         let visible = false;
+
         const timeIntervals = visibleSatellites[satName];
-        timeIntervals.forEach((interval) => {
-          const { start, end } = interval;
+        for (let i = 0; i < timeIntervals.length; i += 1) {
+          const { start, end } = timeIntervals[i];
           const { currentTime } = this.viewer.clock;
 
-          const startTimeJulian = Cesium.JulianDate.fromIso8601(start);
-          const endTimeJulian = Cesium.JulianDate.fromIso8601(end);
+          // Assume start and end times are already JulianDate objects.
+          // If they are not, you should cache these times when the data is first loaded.
+          // const startTimeJulian = Cesium.JulianDate.fromIso8601(start);
+          // const endTimeJulian = Cesium.JulianDate.fromIso8601(end);
 
-          if (Cesium.JulianDate.greaterThanOrEquals(currentTime, startTimeJulian) && Cesium.JulianDate.lessThanOrEquals(currentTime, endTimeJulian)) {
+          if (Cesium.JulianDate.greaterThanOrEquals(currentTime, start) &&
+            Cesium.JulianDate.lessThanOrEquals(currentTime, end)) {
             visible = true;
+            break; // Stop checking once we find a matching interval
           }
-        });
-        if (visible) {
-          console.log("Visible: ", satName);
-          if (sat) {
-            sat.changeColor(Cesium.Color.GREEN);
-          }
-        } else if (sat) {
-          sat.changeColor(Cesium.Color.WHITE);
+        }
+        if (sat) {
+          const newColor = visible ? Cesium.Color.GREEN : Cesium.Color.WHITE;
+          sat.changeColor(newColor);
         }
       });
     }
